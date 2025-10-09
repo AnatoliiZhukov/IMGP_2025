@@ -17,8 +17,17 @@ namespace Network
 
         private void InitSpawnLocations()
         {
-            // Gather all Spawn Location objects and convert them into an array of Transforms
+            // Gather all Spawn Location objects
             var spawnLocationObjects = GameObject.FindGameObjectsWithTag("SpawnLocation");
+            
+            // If none are present, add this object's Transform as the only Spawn Location
+            if (spawnLocationObjects.Length == 0)
+            {
+                _spawnLocations = new [] { gameObject.transform };
+                return;
+            }
+            
+            // Convert existing Spawn Location objects into an array of Transforms
             _spawnLocations = new Transform[spawnLocationObjects.Length];
             for (int i = 0; i < spawnLocationObjects.Length; i++)
                 _spawnLocations[i] = spawnLocationObjects[i].transform;
@@ -26,7 +35,7 @@ namespace Network
         
         public override void OnNetworkSpawn()
         {
-            if (!IsServer) return;
+            if (!IsServer || NetworkManager.Singleton == null) return;
 
             InitSpawnLocations();
             
@@ -37,7 +46,7 @@ namespace Network
 
         public override void OnNetworkDespawn()
         {
-            if (!IsServer) return;
+            if (!IsServer || NetworkManager.Singleton == null) return;
             
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
@@ -47,14 +56,21 @@ namespace Network
         
         private void OnClientConnected(ulong clientID)
         {
+            Debug.Log($"Client {clientID} connected");
+            
             // Cycle through spawn locations if there aren't enough
             var spawnLocationIndex = (NetworkManager.Singleton.ConnectedClients.Count - 1) % _spawnLocations.Length;
             
-            // Init player prefab
+            // Check Player Prefab
+            if (!_playerPrefab)
+            {
+                Debug.LogError("Player Prefab is not assigned!");
+                return;
+            }
+            
+            // Init Player
             var playerNetworkObject = Instantiate(_playerPrefab, _spawnLocations[spawnLocationIndex]).GetComponent<NetworkObject>();
             playerNetworkObject.SpawnWithOwnership(clientID);
-            
-            Debug.Log($"Client {clientID} connected");
         }
 
         private void OnClientDisconnected(ulong clientID)
@@ -86,27 +102,41 @@ namespace Network
         }
         
         // Draw network buttons
+        private const float GUIWidth = 200f;
+        private const float GUIHeight = 300f;
+        private const float GUIPadding = 20f;
+        private const float ButtonHeight = 30f;
         private void OnGUI()
         {
-            // Don't draw under certain conditions
-            if (NetworkManager.Singleton == null
-                || NetworkManager.Singleton.IsClient
-                || NetworkManager.Singleton.IsServer) 
-                return;
-            
-            using (new GUILayout.AreaScope(new Rect(20f, 20f, 100f, 200f)))
+            if (NetworkManager.Singleton == null) return;
+
+            using (new GUILayout.AreaScope(new Rect(GUIPadding, GUIPadding, GUIWidth, GUIHeight)))
             {
-                if (GUILayout.Button("Start Host"))
+                GUILayout.Label($"Players: {NetworkManager.Singleton.ConnectedClients.Count}/{MaxPlayers}");
+        
+                if (!NetworkManager.Singleton.IsClient && !NetworkManager.Singleton.IsServer)
                 {
-                    // Define Connection Approval callback
-                    // Is used to limit max players in this example
-                    // ("Connection Approval" needs to be set to "true" in the NetworkManager)
-                    NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApproval;
+                    if (GUILayout.Button("Start Host", GUILayout.Height(ButtonHeight)))
+                    {
+                        NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApproval;
+                        NetworkManager.Singleton.StartHost();
+                    }
+                    if (GUILayout.Button("Start Client", GUILayout.Height(ButtonHeight)))
+                        NetworkManager.Singleton.StartClient();
                     
-                    NetworkManager.Singleton.StartHost();
+                    if (GUILayout.Button("Start Server", GUILayout.Height(ButtonHeight)))
+                    {
+                        NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApproval;
+                        NetworkManager.Singleton.StartServer();
+                    }
                 }
-                if (GUILayout.Button("Start Client"))
-                    NetworkManager.Singleton.StartClient();
+                else
+                {
+                    if (GUILayout.Button("Disconnect", GUILayout.Height(ButtonHeight)))
+                    {
+                        NetworkManager.Singleton.Shutdown();
+                    }
+                }
             }
         }
     }
