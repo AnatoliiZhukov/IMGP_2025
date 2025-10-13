@@ -777,7 +777,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   <MaxPlayers>k__BackingField: 2
-  _playerPrefab: {fileID: 1631063865608514417, guid: 4e8c660dc246ebd45949179a4c2272d9, type: 3}
+  _playerNetworkObject: {fileID: 7087215867725725066, guid: b31f043322a3b174b9b8d5d684e4659a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

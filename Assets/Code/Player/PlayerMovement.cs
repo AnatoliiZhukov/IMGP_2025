@@ -1,27 +1,22 @@
-using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
 
 namespace Player
 {
-    [RequireComponent(typeof(NetworkObject))]
-    [RequireComponent(typeof(NetworkTransform))]
-    public class PlayerMovement : NetworkBehaviour
+    [RequireComponent(typeof(CharacterController))]
+    public class PlayerMovement : MonoBehaviour
     {
-        [SerializeField] private float movementSpeed = 10f;
-        private void Update()
+        private CharacterController _controller;
+        
+        private void Awake()
         {
-            if (!IsOwner) return;
-            
-            RequestToMove_ServerRpc(Input.GetAxis("Horizontal"));
+            _controller = GetComponent<CharacterController>();
         }
-
-        [ServerRpc]
-        private void RequestToMove_ServerRpc(float input)
+        
+        public void MovePlayer()
         {
-            // Horizontal movement
-            var T = transform;
-            T.Translate(Vector3.right * input * Time.deltaTime * movementSpeed);
+            if (!enabled) return;
+            
+            _controller.Move(Vector3.forward * Time.deltaTime);
         }
     }
 }

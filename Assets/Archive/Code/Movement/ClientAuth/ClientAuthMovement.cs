@@ -1,13 +1,14 @@
+using Player;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace ClientAuth
+namespace Archive.Movement.ClientAuth
 {
     [RequireComponent(typeof(NetworkObject))]
     [RequireComponent(typeof(ClientAuthNetworkTransform))]
     public class ClientAuthMovement : NetworkBehaviour
     {
-        [SerializeField] private float movementSpeed = 10f;
+        [SerializeField] private float _movementSpeed = 10f;
         private void Update()
         {
             // Do nothing if we have no ownership
@@ -17,7 +18,7 @@ namespace ClientAuth
             // Horizontal movement
             if (Input.GetAxis("Horizontal") == 0) return;
             var T = transform;
-            T.Translate(Vector3.right * Input.GetAxis("Horizontal") * Time.deltaTime * movementSpeed);
+            T.Translate(Vector3.right * Input.GetAxis("Horizontal") * Time.deltaTime * _movementSpeed);
         }
     }
 }

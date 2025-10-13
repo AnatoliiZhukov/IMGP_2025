@@ -1,3 +1,4 @@
+using Player;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace Network
     {
         [field: SerializeField] public int MaxPlayers { get; private set; } = 2;
         
-        [SerializeField] private GameObject _playerPrefab;
+        [SerializeField] private NetworkObject _playerNetworkObject;
         
         private Transform[] _spawnLocations;
 
@@ -35,7 +36,7 @@ namespace Network
         
         public override void OnNetworkSpawn()
         {
-            if (!IsServer || NetworkManager.Singleton == null) return;
+            if (NetworkManager.Singleton == null || !IsServer) return;
 
             InitSpawnLocations();
             
@@ -46,7 +47,7 @@ namespace Network
 
         public override void OnNetworkDespawn()
         {
-            if (!IsServer || NetworkManager.Singleton == null) return;
+            if (NetworkManager.Singleton == null || !IsServer) return;
             
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
@@ -54,28 +55,29 @@ namespace Network
             NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApproval;
         }
         
-        private void OnClientConnected(ulong clientID)
+        private void OnClientConnected(ulong clientId)
         {
-            Debug.Log($"Client {clientID} connected");
+            Debug.Log($"Client {clientId} connected");
             
             // Cycle through spawn locations if there aren't enough
             var spawnLocationIndex = (NetworkManager.Singleton.ConnectedClients.Count - 1) % _spawnLocations.Length;
             
             // Check Player Prefab
-            if (!_playerPrefab)
+            if (!_playerNetworkObject)
             {
                 Debug.LogError("Player Prefab is not assigned!");
                 return;
             }
             
             // Init Player
-            var playerNetworkObject = Instantiate(_playerPrefab, _spawnLocations[spawnLocationIndex]).GetComponent<NetworkObject>();
-            playerNetworkObject.SpawnWithOwnership(clientID);
+            var spawnTransform = _spawnLocations[spawnLocationIndex];
+            var playerNetworkObject = Instantiate(_playerNetworkObject, spawnTransform.position, spawnTransform.rotation);
+            playerNetworkObject.SpawnWithOwnership(clientId);
         }
 
-        private void OnClientDisconnected(ulong clientID)
+        private void OnClientDisconnected(ulong clientId)
         {
-            Debug.Log($"Client {clientID} disconnected");
+            Debug.Log($"Client {clientId} disconnected");
         }
         
         private void ConnectionApproval(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
