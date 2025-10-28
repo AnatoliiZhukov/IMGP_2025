@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,6 +12,21 @@ namespace Player
         [SerializeField] private HealthDisplay _healthDisplayPrefab;
         [SerializeField] private Vector3 _healthDisplayOffset = new Vector3(0f, 3f, 0f);
         private HealthDisplay _healthDisplay;
+
+        // public struct CustomValueType : INetworkSerializable
+        // {
+        //     public bool SomeBool;
+        //     public int SomeInt;
+        //     public FixedString32Bytes SomeString; // 32 symbols long
+        //     
+        //     // Serialization instructions (required)
+        //     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        //     {
+        //         serializer.SerializeValue(ref SomeBool);
+        //         serializer.SerializeValue(ref SomeInt);
+        //         serializer.SerializeValue(ref SomeString);
+        //     }
+        // }
         
         private void Update()
         {
