@@ -8,13 +8,16 @@ namespace Player
     [RequireComponent(typeof(ClientAuthNetworkTransform))]
     [RequireComponent(typeof(NetworkTransform))]
     [RequireComponent(typeof(PlayerMovement))]
+    [RequireComponent(typeof(PlayerState))]
     public class PlayerCore : NetworkBehaviour
     {
         private PlayerMovement _playerMovement;
+        private PlayerState _playerState;
 
         private void Awake()
         {
             _playerMovement = GetComponent<PlayerMovement>();
+            _playerState = GetComponent<PlayerState>();
         }
         
         public override void OnNetworkSpawn()

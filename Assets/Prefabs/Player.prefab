@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7553860871209542925}
   - component: {fileID: 3051096491441497644}
   - component: {fileID: 4536808251657249615}
+  - component: {fileID: 5807385875799969200}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -49,7 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3357647310
+  GlobalObjectIdHash: 3845934879
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -132,7 +133,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &3051096491441497644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,6 +159,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &5807385875799969200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3657598502235152294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d16eb9452293df4a92feacdc5936782, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _health:
+    m_InternalValue: 10
+  _healthDisplayPrefab: {fileID: 8844113062065870524, guid: 199c4c5fd0f65c3458a128a4f78e1716, type: 3}
+  _healthDisplayOffset: {x: 0, y: 3, z: 0}
 --- !u!1 &5311797359968479826
 GameObject:
   m_ObjectHideFlags: 0
