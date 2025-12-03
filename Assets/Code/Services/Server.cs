@@ -1,16 +1,16 @@
 #if UNITY_SERVER || ENABLE_UCS_SERVER
 using System.Threading.Tasks;
-using Unity.Netcode;
 using Unity.Services.Authentication.Server;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
-#endif
 using System;
 using UnityEngine;
+#endif
+using Unity.Netcode;
 
 namespace Services
 {
-    public class Server : MonoBehaviour
+    public class Server : NetworkBehaviour
     {
 #if UNITY_SERVER || ENABLE_UCS_SERVER
 
@@ -72,13 +72,72 @@ namespace Services
                // Otherwise you risk the Session being in an uninitialized state.
                 async void OnServerAllocatedCallback(IMultiplayAllocation obj)
                 {
+                    
+                    // var serverConfig = MultiplayService.Instance.ServerConfig;
+                    //
+                    // Debug.Log($"Server IP: {serverConfig.IpAddress}");
+                    // Debug.Log($"Server Port: {serverConfig.Port}");
+                    // Debug.Log($"Query Port: {serverConfig.QueryPort}");
+                    // Debug.Log($"Allocation ID: {serverConfig.AllocationId}");
+                    //
+                    // NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(serverConfig.IpAddress, serverConfig.Port, "0.0.0.0");
+                    
                     var session = m_SessionManager.Session;
+                    
+                    NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+                    NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+                    NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApproval;
+                    
+                    NetworkManager.Singleton.StartServer();
+                    NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Additive);
+                    
                     await m_SessionManager.SetPlayerReadinessAsync(true);
                     Debug.Log("[Multiplay] Server is ready to accept players");
-                    
-                    NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Additive);
                 }
             }
+        }
+
+        public override void OnDestroy()
+        {
+            if (NetworkManager.Singleton == null || !IsServer) return;
+            
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+            
+            NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApproval;
+        }
+        
+        private void OnClientConnected(ulong clientId)
+        {
+            Debug.Log($"Client {clientId} connected");
+        }
+
+        private void OnClientDisconnected(ulong clientId)
+        {
+            Debug.Log($"Client {clientId} disconnected");
+        }
+        
+        private void ConnectionApproval(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
+        {
+            if (NetworkManager.Singleton.ConnectedClients.Count >= 2)
+            {
+                // Reject (Game full)
+                response.Approved = false;
+                response.CreatePlayerObject = false;
+                response.Reason = "Game full";
+                Debug.Log($"Rejected client {request.ClientNetworkId}: Game full ({NetworkManager.Singleton.ConnectedClients.Count}/{2})");
+            }
+            else
+            {
+                // Approve
+                response.Approved = true;
+                response.CreatePlayerObject = true;
+            
+                Debug.Log($"Approved client {request.ClientNetworkId}: {NetworkManager.Singleton.ConnectedClients.Count + 1}/{2} players");
+            }
+            
+            // Instant response
+            response.Pending = false;
         }
 #endif
     }
