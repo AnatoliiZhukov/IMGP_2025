@@ -32,10 +32,7 @@ namespace Player
         {
             if (!IsOwner) return;
             
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                _health.Value--;
-            }
+            
         }
 
         public override void OnNetworkSpawn()
